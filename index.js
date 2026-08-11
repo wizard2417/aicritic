@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import OpenAI from 'openai';
 const app = express();app.use(cors());app.use(express.json());
-const client = new OpenAI({  apiKey: process.env.LLM_API_KEY,  baseURL: process.env.LLM_BASE_URL || 'https://proxyapi.ru',});
+const client = new OpenAI({  apiKey: process.env.LLM_API_KEY,  baseURL: process.env.LLM_BASE_URL || 'https://openai.api.proxyapi.ru/v1',});
 const MODEL = process.env.LLM_MODEL || 'gpt-5.4-nano';
 const SYSTEM_PROMPT = `Ты — венчурный инвестор с опытом.Анализируй бизнес-идеи профессионально, по существу.Без подбадривания и без излишней резкости.Всегда отвечай только на русском языке, независимо от языка идеи.Верни ответ строго в формате JSON со следующей структурой:{  "strengths": ["сильная сторона 1", "сильная сторона 2", "сильная сторона 3"],  "weaknesses": ["слабое место 1", "слабое место 2", "слабое место 3"],  "questions": ["вопрос инвестора 1", "вопрос инвестора 2", "вопрос инвестора 3"]}По 3 пункта в каждом массиве. Формулируй конкретно, без воды. Никакого текста до или после JSON.`;
 app.post('/api/analyze', async (req, res) => {  try {    const { idea } = req.body;    
