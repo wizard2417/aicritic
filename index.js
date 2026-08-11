@@ -1,0 +1,11 @@
+import express from 'express';
+import cors from 'cors';
+import OpenAI from 'openai';
+const app = express();app.use(cors());app.use(express.json());
+const client = new OpenAI({  apiKey: process.env.LLM_API_KEY,  baseURL: process.env.LLM_BASE_URL || 'https://proxyapi.ru',});
+const MODEL = process.env.LLM_MODEL || 'gpt-5.4-nano';
+const SYSTEM_PROMPT = `Ты — венчурный инвестор с опытом.Анализируй бизнес-идеи профессионально, по существу.Без подбадривания и без излишней резкости.Всегда отвечай только на русском языке, независимо от языка идеи.Верни ответ строго в формате JSON со следующей структурой:{  "strengths": ["сильная сторона 1", "сильная сторона 2", "сильная сторона 3"],  "weaknesses": ["слабое место 1", "слабое место 2", "слабое место 3"],  "questions": ["вопрос инвестора 1", "вопрос инвестора 2", "вопрос инвестора 3"]}По 3 пункта в каждом массиве. Формулируй конкретно, без воды. Никакого текста до или после JSON.`;
+app.post('/api/analyze', async (req, res) => {  try {    const { idea } = req.body;    
+if (!idea) return res.status(400).json({ error: 'Поле idea обязательно' });    
+const response = await client.chat.completions.create({      model: MODEL,      messages: [        { role: 'system', content: SYSTEM_PROMPT },        { role: 'user', content: idea },      ],      response_format: { type: 'json_object' },      temperature: 0.7,    });    
+const raw = response.choices[0].message.content;    const parsed = JSON.parse(raw);    res.json(parsed);  } catch (e) {    console.error(e);    res.status(500).json({ error: 'Не удалось получить разбор. Попробуйте ещё раз.' });  }});app.get('/', (req, res) => {  res.send('AI-критик работает. Эндпоинт: POST /api/analyze');});const PORT = process.env.PORT || 3000;app.listen(PORT, () => console.log(`AI-критик готов на порту ${PORT}`));
